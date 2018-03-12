@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+     <script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+  </script>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery.js"></script> 
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="../static/hello.css" rel="stylesheet">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mootools/1.6.0/mootools-core.min.js"></script>
+
+    <title>SmartBins-Admin</title>
+    
+<style>
+body, html {
+    height: 100%;
+    margin: 0;
+}
+
+.bg {
+    /* The image used */
+    background-image:url("https://i1.wp.com/s3-eu-west-1.amazonaws.com/leadersandco/wp-content/uploads/2016/10/24010033/smart-trash-collection.jpg?fit=900%2C474&ssl=1");
+
+    /* Full height */
+    height: 100%; 
+
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    top: 50%;
+}
+
+
+
+#showMap{
+  height:100%;
+  width:100%;
+}
+
+.row{
+  height:100%;
+}
+#showMap2{
+  height:100%;
+}
+
+#Report{
+  height:100%;
+  width:80%;
+}
+
+#Locationdata{
+  border: 1px solid black;
+  text-align: center;
+}
+#binid1{
+  border: 1px solid black;
+  text-align: center;
+}
+#latitude1{
+  border: 1px solid black;
+  text-align: center;
+}
+#longitude1{
+  border: 1px solid black;
+  text-align: center;
+}
+#table_row{
+  border: 1px solid black;
+  text-align: center;
+}
+
+
+</style>
+  </head>
+  <body>
+  <script>
+    var markings=[];
+    var binLatitude=[];
+    var binLongitude=[];
+
+    function initMap(){
+      $.getJSON($SCRIPT_ROOT + '/markers', {
+        
+    }, function(data){
+          markings=data.result;
+         //console.log(markings[0]['latitude'])
+      var options={
+        zoom:12,
+        center:{lat:12.9716,lng:77.5946}
+      }
+
+      var map=new google.maps.Map(document.getElementById('showMap1'),options);
+    
+      for (i = 0; i < markings.length; i++)
+      {
+        var location = new google.maps.LatLng(markings[i]['latitude'],markings[i]['longitude'] );
+        new google.maps.Marker({
+        position: location,
+        map: map
+      });
+      }
+    
+    google.maps.event.addListener(map, 'click', function (e) {
+ 
+        //Determine the location where the user has clicked.
+        var location = e.latLng;
+        binLatitude.push(location.lat());
+        binLongitude.push(location.lng());
+        //Create a marker and placed it on the map.
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map
+        });
+        document.getElementById('latitude').value=location.lat();
+        document.getElementById('longitude').value=location.lng();
+        //alert(binLatitude);
+         
+        //Attach click event handler to the marker.
+        google.maps.event.addListener(marker, "click", function (e) {
+            var infoWindow = new google.maps.InfoWindow({
+                content: 'Latitude: ' + location.lat() + '<br />Longitude: ' + location.lng()
+                
+            });
+            infoWindow.open(map, marker);
+
+        });
+    });
+  });
+}
+ 
+    function loadScript(script_url)
+    {
+
+      
+
+    document.getElementById('map').style.display='none';
+    document.getElementById('Report').style.display='none';
+    document.getElementById('showMap').style.display='block';
+    var mapping =document.getElementById('map');
+    var head= document.getElementsByTagName('head')[0];
+    var script= document.createElement('script');
+    script.type= 'text/javascript';
+    script.src= script_url;
+    head.appendChild(script);
+    
+    }
+    
+    function Save(){
+    
+ document.getElementById('latitude').value=" ";
+document.getElementById('longitude').value=" ";
+$.getJSON($SCRIPT_ROOT + '/save', {
+        latitude: JSON.stringify(binLatitude),
+        longitude: JSON.stringify(binLongitude)
+    }, function(data){
+        console.log(data.result)
+        $( "#result" ).text(data.result);
+    });
+
+     binLatitude=[]
+     binLongitude=[] 
+    }
+
+
+    function Exit(){
+      document.getElementById('showMap').style.display='none';
+       document.getElementById('map').style.display='block';
+       document.getElementById('Report').style.display='none';
+    }
+
+    function GenerateReport(){
+        document.getElementById('map').style.display='none';
+        document.getElementById('showMap').style.display='none';
+       document.getElementById('Report').style.display='block';
+         $.getJSON($SCRIPT_ROOT + '/generateReport', {
+        
+    }, function(data){
+       
+       document.getElementById("Report").innerHTML="";
+      
+       var table = document.createElement('table');
+       table.className="table table-striped table-bordered";
+       table.setAttribute("id", "Locationdata");
+       table.setAttribute("cellspacing", "0");
+       table.setAttribute("border", "1px solid black");
+       table.setAttribute("bgcolor", "green");
+       table.setAttribute("width", "100%");
+       var thead= document.createElement('thead');
+       var tr = document.createElement('tr');
+       tr.setAttribute("id","header_id");
+       tr.setAttribute("font-size","2");
+       var th1 = document.createElement('th');
+       th1.setAttribute("id",'binid1');
+       th1.setAttribute("class","headers");
+       var textvalue = document.createTextNode('binid');
+       th1.appendChild(textvalue);
+       tr.appendChild(th1);
+       var th2 = document.createElement('th');
+       th2.setAttribute("id",'latitude1');
+       th2.setAttribute("class","headers");
+       var textvalue = document.createTextNode('latitude');
+       th2.appendChild(textvalue);
+       tr.appendChild(th2);
+       var th3 = document.createElement('th');
+       th3.setAttribute("id",'longitude1');
+       th3.setAttribute("class","headers");
+       var textvalue = document.createTextNode('longitude');
+       th3.appendChild(textvalue);
+       tr.appendChild(th3);
+       thead.appendChild(tr);
+       table.appendChild(thead);
+       var tbody= document.createElement('tbody');
+       for(key in data.result) 
+       {
+        if(key<data.result.length)
+        {
+       console.log(key) 
+       var tr2=document.createElement('tr');
+       tr2.setAttribute('id','table_row');
+       var td1=document.createElement('td');
+       var textvalue = document.createTextNode(data.result[key]['binid']);
+       td1.appendChild(textvalue);
+       tr2.appendChild(td1);
+  
+       var td1=document.createElement('td');
+       var textvalue = document.createTextNode(data.result[key]['latitude']);
+       td1.appendChild(textvalue);
+       tr2.appendChild(td1);
+
+       var td1=document.createElement('td');
+       var textvalue = document.createTextNode(data.result[key]['longitude']);
+       td1.appendChild(textvalue);
+       tr2.appendChild(td1);
+
+       tbody.appendChild(tr2);
+       }
+       }
+
+
+       table.appendChild(tbody);
+       document.getElementById("Report").appendChild(table);
+       //console.log(table)
+       var button = document.createElement("button");
+       button.innerHTML = "Exit";
+       button.setAttribute("class","button");
+       document.getElementById('Report').appendChild(button);
+       button.addEventListener ("click", function() {
+        document.getElementById('showMap').style.display='none';
+       document.getElementById('map').style.display='block';
+       document.getElementById('Report').style.display='none';
+       });
+
+    });
+
+    }
+    </script>
+
+  
+
+
+    
+    <div class="bg" id="map" style="display:block">
+      <center><h5><font color="green">You can view current locations of dustbins and add new ones</font></h5></center>
+      <center><button type="button" class="button" onclick="loadScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyC7pQqzDyx32C5jw9reMJgcFmZXqxrTSMU&callback=initMap');"><b>Show Map</b></button></center>
+      <br/>
+      <center><button type="button" class="button" onclick="GenerateReport()"><b>Generate Report</b></button></center>
+    </div>
+    
+    <div class='container-fluid' id='showMap' style="display:none">
+      <div class='row'>
+      <div class='col-sm-9' id='showMap1'></div>
+      <div class='col-sm-3' id='showMap2'>
+        <br/>
+        <br/>
+        <div>
+          Latitude: <textarea rows='1' cols='40' id='latitude'></textarea>
+          <br/>
+          <br/>
+          Longitude: <textarea rows='1' cols='40' id='longitude'></textarea>
+          <br/>
+          <br/>
+         <center><button type='button' class='button' id='AddBin' onclick='Save()'><b>Save new dustbins</b></button></center> 
+         <br/>
+         <br/>
+          <center><button type='button' class='button' id='Exit' onclick='Exit()'><b>Exit</b></button></center>    
+   </div>
+ </div>
+ </div>
+</div>
+
+    <div class='container' id="Report" style="display:none">
+    </div>  
+
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </body>
+</html>
