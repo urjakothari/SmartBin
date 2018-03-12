@@ -28,8 +28,13 @@ There are two columns in DustbinData.csv
 	requiredHeight = DustbinHeight - value
 	
 
+We have hosted our database in elephantsql cloud
 
+To view Database type this command in terminal :
 
+ psql postgres://pxzpxrfz:mPamzjDlCoiNLEETVUVzGajAY5BSGf5q@baasu.db.elephantsql.com:5432/pxzpxrfz
+
+(postgres installation required)
 
 
 	

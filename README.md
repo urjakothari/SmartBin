@@ -16,7 +16,7 @@ Two modules
 
 2. Android App :
 
-    -> Install apk and run.
+    -> Install apk and run.(app-debug.apk)
 
 We have generated real time dustbin data in DustbinData.csv. We used this data randomly in our project.
 
